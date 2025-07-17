@@ -310,7 +310,7 @@ OneBot server’s reverse webSocket port
 
 Default: `/ws/`
 
-Websocket resource location. 
+Websocket resource location.
 
 > Here is a demo for one bot ws reverse path configuration: `ws://127.0.0.1:9001/ws/`
 
@@ -356,7 +356,7 @@ Message for `/list` command when player list is empty.
 
 ## License
 
-Copyright © 2021 Andy Zhang and contributors
+Copyright © 2021-2025 Andy Zhang and contributors
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 

@@ -356,7 +356,7 @@ QQ 消息的格式化文本。占位符与上文同理，所有的服务器名�
 
 ## License
 
-Copyright © 2022-2025 Andy Zhang and contributors
+Copyright © 2021-2025 Andy Zhang and contributors
 
 本程序是自由软件：你可以再分发之和/或依照由自由软件基金会发布的 GNU 通用公共许可证修改之，无论是版本 3 许可证，还是（按你的决定）任何以后版都可以。
 
