@@ -1,42 +1,24 @@
-name: Release
+name: Build
 
 on:
   push:
     branches:
       - master
+  pull_request:
+    branches:
+      - master
+    types:
+      - closed
 
 jobs:
-  release-please:
+  build:
+    if: github.event_name != 'pull_request' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
-    name: Release Please
-
-    outputs:
-      release_created: ${{ steps.release-please.outputs.release_created }}
-      tag_name: ${{ steps.release-please.outputs.tag_name }}
+    name: Build
 
     steps:
-      - name: Release Please
-        uses: googleapis/release-please-action@v4
-        id: release-please
-        with:
-          config-file: .release-please/release-please-config.json
-          manifest-file: .release-please/.release-please-manifest.json
-
-  build-and-publish:
-    runs-on: ubuntu-latest
-    name: Build and Publish
-    needs: release-please
-    if: ${{ needs.release-please.outputs.release_created == 'true' }}
-
-    steps:
-      - name: Parse Version
-        id: version
-        run: echo "version=$(echo "${{ needs.release-please.outputs.tag_name }}" | cut -c 2-)" >> "$GITHUB_OUTPUT"
-
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -48,36 +30,15 @@ jobs:
       - name: Build with Maven
         run: mvn --batch-mode --update-snapshots package
 
-      - name: Rename artifact
-        run: mv target/*-jar-with-dependencies.jar ChatHub-${{ steps.version.outputs.version }}.jar
+      - name: Determine version
+        id: version
+        run: echo "version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> "$GITHUB_OUTPUT"
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Rename artifact with version
+        run: mv target/*-jar-with-dependencies.jar "target/ChatHub-${{ steps.version.outputs.version }}.jar"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
-          node-version: 20
-
-      - name: Generate Latest Changelog
-        run: npx changelogithub --output LATEST_CHANGELOG.md
-        env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-
-      - name: Publish
-        uses: Kir-Antipov/mc-publish@v3.3
-        with:
-          version: ChatHub-${{ steps.version.outputs.version }}
-
-          modrinth-id:  H3USaks7
-          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-
-          curseforge-id: 825508
-          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
-
-          files: |
-            ChatHub-${{ steps.version.outputs.version }}.jar
-          changelog-file: LATEST_CHANGELOG.md
-
-          loaders: |
-            velocity
-          game-versions: |
-            [1.12,)
-          game-version-filter: releases
+          name: ChatHub-${{ steps.version.outputs.version }}
+          path: target/ChatHub-${{ steps.version.outputs.version }}.jar

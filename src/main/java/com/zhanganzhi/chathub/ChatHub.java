@@ -26,7 +26,7 @@ import java.util.concurrent.ThreadPoolExecutor;
         // x-release-please-end
         url = "https://github.com/AnzhiZhang/ChatHub",
         description = "Chat hub for servers under velocity proxy",
-        authors = {"Andy Zhang", "ZhuRuoLing", "401U"}
+        authors = {"Andy Zhang", "ZhuRuoLing", "401U", "maoyihao"}
 )
 public class ChatHub {
     @Getter

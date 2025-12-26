@@ -11,6 +11,8 @@
 
 > [Velocity](https://velocitypowered.com/) cross servers chat plugin.
 
+> Original project: [AnzhiZhang/ChatHub](https://github.com/AnzhiZhang/ChatHub)
+
 ## Example Video
 
 <https://user-images.githubusercontent.com/37402126/208178900-9c3b4ba1-0c78-4ca1-830d-0b70ef7b3db8.mp4>
