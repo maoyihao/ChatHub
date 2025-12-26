@@ -7,6 +7,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 public class Config {
@@ -72,6 +74,11 @@ public class Config {
 
     public boolean isCompleteTakeoverMode() {
         return configToml.getBoolean("minecraft.completeTakeoverMode");
+    }
+
+    public List<String> getMinecraftIgnoreChatMessageRe() {
+        List<String> patterns = configToml.getList("minecraft.ignoreChatMessageRe");
+        return patterns != null ? patterns : Collections.emptyList();
     }
 
     public boolean isDiscordEnabled() {

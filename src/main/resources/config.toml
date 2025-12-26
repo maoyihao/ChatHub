@@ -11,6 +11,7 @@ qq = '§a§lQQ'
 
 [minecraft]
 completeTakeoverMode = false
+ignoreChatMessageRe = []
 
 [minecraft.message]
 chat = '§7[{server}§7]§e{name}§r: {message}'
