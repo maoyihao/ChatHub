@@ -50,7 +50,7 @@ public class ChatHub {
     public void onInitialize(ProxyInitializeEvent event) {
         // core
         Config config = Config.getInstance();
-        config.loadConfig(dataDirectory);
+        config.loadConfig(dataDirectory, logger);
         threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(
                 config.getCoreThreadPoolSize(),
                 new ThreadFactoryBuilder().setNameFormat("chathub-tasks-%d").build()

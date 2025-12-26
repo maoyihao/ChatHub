@@ -2,6 +2,7 @@ package com.zhanganzhi.chathub.core.config;
 
 import com.moandjiezana.toml.Toml;
 import com.zhanganzhi.chathub.platforms.Platform;
+import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,13 +15,10 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class Config {
     private static final Config config = new Config();
-    private static final Logger logger = LoggerFactory.getLogger(Config.class);
     private Toml configToml;
+    private Logger logger;
     private boolean tempIsKookEnabled;
     private List<Pattern> minecraftIgnoreChatMessagePatterns = Collections.emptyList();
 
@@ -31,7 +29,7 @@ public class Config {
         return config;
     }
 
-    public void loadConfig(Path dataDirectory) {
+    public void loadConfig(Path dataDirectory, Logger logger) {
         // check data directory
         if (!dataDirectory.toFile().exists()) {
             boolean mkdirResult = dataDirectory.toFile().mkdir();
@@ -39,6 +37,8 @@ public class Config {
                 throw new RuntimeException("Failed to create data directory");
             }
         }
+
+        this.logger = logger;
 
         // check file exists
         File configFile = new File(dataDirectory.toAbsolutePath().toString(), "config.toml");
