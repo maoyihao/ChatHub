@@ -17,6 +17,7 @@ import net.kyori.adventure.text.Component;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class VelocityAdaptor extends AbstractAdaptor<VelocityFormatter> {
     public VelocityAdaptor(ChatHub chatHub) {
@@ -46,6 +47,15 @@ public class VelocityAdaptor extends AbstractAdaptor<VelocityFormatter> {
         }
     }
 
+    private boolean shouldIgnoreMessage(String message) {
+        for (Pattern pattern : config.getMinecraftIgnoreChatMessagePatterns()) {
+            if (pattern.matcher(message).find()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public void start() {
         getProxyServer().getEventManager().register(chatHub, this);
@@ -59,6 +69,9 @@ public class VelocityAdaptor extends AbstractAdaptor<VelocityFormatter> {
     @Override
     public void onUserChat(MessageEvent event) {
         for (String line : event.content().split("\n")) {
+            if (shouldIgnoreMessage(line)) {
+                continue;
+            }
             Component component = Component.text(formatter.formatUserChat(event.getServerName(), event.user(), line));
             // check complete takeover mode for message from velocity
             if (event.platform() == Platform.VELOCITY && !config.isCompleteTakeoverMode()) {
@@ -87,6 +100,9 @@ public class VelocityAdaptor extends AbstractAdaptor<VelocityFormatter> {
     @Subscribe
     public void onPlayerChatEvent(PlayerChatEvent event) {
         Player player = event.getPlayer();
+        if (shouldIgnoreMessage(event.getMessage())) {
+            return;
+        }
         player.getCurrentServer().ifPresent(
                 serverConnection -> {
                     getEventHub().onUserChat(new MessageEvent(

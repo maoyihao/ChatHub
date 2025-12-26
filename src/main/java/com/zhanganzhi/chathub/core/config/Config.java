@@ -2,17 +2,25 @@ package com.zhanganzhi.chathub.core.config;
 
 import com.moandjiezana.toml.Toml;
 import com.zhanganzhi.chathub.platforms.Platform;
+import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 public class Config {
     private static final Config config = new Config();
     private Toml configToml;
+    private Logger logger;
     private boolean tempIsKookEnabled;
+    private List<Pattern> minecraftIgnoreChatMessagePatterns = Collections.emptyList();
 
     private Config() {
     }
@@ -21,7 +29,7 @@ public class Config {
         return config;
     }
 
-    public void loadConfig(Path dataDirectory) {
+    public void loadConfig(Path dataDirectory, Logger logger) {
         // check data directory
         if (!dataDirectory.toFile().exists()) {
             boolean mkdirResult = dataDirectory.toFile().mkdir();
@@ -29,6 +37,8 @@ public class Config {
                 throw new RuntimeException("Failed to create data directory");
             }
         }
+
+        this.logger = logger;
 
         // check file exists
         File configFile = new File(dataDirectory.toAbsolutePath().toString(), "config.toml");
@@ -45,6 +55,7 @@ public class Config {
 
         configToml = new Toml().read(configFile);
         tempIsKookEnabled = configToml.getBoolean("kook.enable");
+        loadMinecraftIgnoreChatMessagePatterns();
     }
 
     public void setIsKookEnabled(boolean isKookEnabled) {
@@ -72,6 +83,37 @@ public class Config {
 
     public boolean isCompleteTakeoverMode() {
         return configToml.getBoolean("minecraft.completeTakeoverMode");
+    }
+
+    public List<String> getMinecraftIgnoreChatMessageRe() {
+        List<String> patterns = configToml.getList("minecraft.ignoreChatMessageRe");
+        return patterns != null ? patterns : Collections.emptyList();
+    }
+
+    public List<Pattern> getMinecraftIgnoreChatMessagePatterns() {
+        return minecraftIgnoreChatMessagePatterns;
+    }
+
+    private void loadMinecraftIgnoreChatMessagePatterns() {
+        List<String> patterns = getMinecraftIgnoreChatMessageRe();
+        if (patterns.isEmpty()) {
+            minecraftIgnoreChatMessagePatterns = Collections.emptyList();
+            return;
+        }
+
+        List<Pattern> compiledPatterns = new ArrayList<>();
+        for (String pattern : patterns) {
+            if (pattern == null) {
+                logger.warn("Ignore chat regex is null and will be skipped");
+                continue;
+            }
+            try {
+                compiledPatterns.add(Pattern.compile(pattern));
+            } catch (PatternSyntaxException e) {
+                logger.warn("Ignore chat regex is invalid and will be skipped: {}", pattern, e);
+            }
+        }
+        minecraftIgnoreChatMessagePatterns = Collections.unmodifiableList(compiledPatterns);
     }
 
     public boolean isDiscordEnabled() {
