@@ -48,8 +48,8 @@ public class VelocityAdaptor extends AbstractAdaptor<VelocityFormatter> {
     }
 
     private boolean shouldIgnoreMessage(String message) {
-        for (String pattern : config.getMinecraftIgnoreChatMessageRe()) {
-            if (Pattern.compile(pattern).matcher(message).find()) {
+        for (Pattern pattern : config.getMinecraftIgnoreChatMessagePatterns()) {
+            if (pattern.matcher(message).find()) {
                 return true;
             }
         }

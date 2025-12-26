@@ -7,14 +7,22 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Config {
     private static final Config config = new Config();
+    private static final Logger logger = LoggerFactory.getLogger(Config.class);
     private Toml configToml;
     private boolean tempIsKookEnabled;
+    private List<Pattern> minecraftIgnoreChatMessagePatterns = Collections.emptyList();
 
     private Config() {
     }
@@ -47,6 +55,7 @@ public class Config {
 
         configToml = new Toml().read(configFile);
         tempIsKookEnabled = configToml.getBoolean("kook.enable");
+        loadMinecraftIgnoreChatMessagePatterns();
     }
 
     public void setIsKookEnabled(boolean isKookEnabled) {
@@ -79,6 +88,32 @@ public class Config {
     public List<String> getMinecraftIgnoreChatMessageRe() {
         List<String> patterns = configToml.getList("minecraft.ignoreChatMessageRe");
         return patterns != null ? patterns : Collections.emptyList();
+    }
+
+    public List<Pattern> getMinecraftIgnoreChatMessagePatterns() {
+        return minecraftIgnoreChatMessagePatterns;
+    }
+
+    private void loadMinecraftIgnoreChatMessagePatterns() {
+        List<String> patterns = getMinecraftIgnoreChatMessageRe();
+        if (patterns.isEmpty()) {
+            minecraftIgnoreChatMessagePatterns = Collections.emptyList();
+            return;
+        }
+
+        List<Pattern> compiledPatterns = new ArrayList<>();
+        for (String pattern : patterns) {
+            if (pattern == null) {
+                logger.warn("Ignore chat regex is null and will be skipped");
+                continue;
+            }
+            try {
+                compiledPatterns.add(Pattern.compile(pattern));
+            } catch (PatternSyntaxException e) {
+                logger.warn("Ignore chat regex is invalid and will be skipped: {}", pattern, e);
+            }
+        }
+        minecraftIgnoreChatMessagePatterns = Collections.unmodifiableList(compiledPatterns);
     }
 
     public boolean isDiscordEnabled() {
